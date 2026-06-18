@@ -95,6 +95,85 @@ function TabButton<T extends string>({
 }
 
 /**
+ * Mobile rendering — a dropdown button showing the active tab, opening a menu
+ * (Tasks-app FilterButtonsGroupSelector pattern). Not a native <select>.
+ */
+function MobileTabsBar<T extends string>({
+  tabs,
+  activeTabKey,
+  onTabChange,
+  leadingInset,
+}: {
+  tabs: TabItem<T>[];
+  activeTabKey: T;
+  onTabChange: (key: T) => void;
+  leadingInset: number;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const activeLabel = tabs.find((t) => t.key === activeTabKey)?.label ?? '';
+
+  return (
+    <div
+      ref={ref}
+      style={{ paddingLeft: leadingInset }}
+      className="relative flex h-12 items-center border-0 border-b border-solid border-tab-border"
+    >
+      <div className="relative">
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+          className="flex items-center gap-1.5 border-none bg-transparent cursor-pointer px-2 text-sm font-normal text-text-primary"
+        >
+          {activeLabel}
+          <ChevronDown />
+        </button>
+        {open && (
+          <div
+            role="listbox"
+            className="absolute left-0 top-full z-10 mt-1 min-w-[160px] rounded-lg border border-solid border-tab-border bg-white py-1 shadow-lg"
+          >
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                role="option"
+                aria-selected={tab.key === activeTabKey}
+                disabled={tab.disabled}
+                onClick={() => {
+                  if (tab.disabled) return;
+                  onTabChange(tab.key);
+                  setOpen(false);
+                }}
+                className={[
+                  'flex w-full items-center border-none bg-transparent',
+                  'cursor-pointer px-3 py-2 text-left text-sm',
+                  tab.disabled ? 'text-text-disabled' : 'text-text-primary',
+                  tab.key === activeTabKey ? 'bg-[#EFF1F4]' : '',
+                ].join(' ')}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
  * Unified Tabs — single 1px-underline tab pattern.
  *
  * - 1px active indicator (#212B36) flush with the bar's bottom border
@@ -185,17 +264,12 @@ export function Tabs<T extends string = string>({
       </div>
 
       {isMobile ? (
-        <select
-          className="h-12 w-full border-0 border-b border-solid border-tab-border bg-transparent px-2 text-sm text-text-primary"
-          value={activeTabKey}
-          onChange={(e) => onTabChange(e.target.value as T)}
-        >
-          {tabs.map((tab) => (
-            <option key={tab.key} value={tab.key} disabled={tab.disabled}>
-              {tab.label}
-            </option>
-          ))}
-        </select>
+        <MobileTabsBar
+          tabs={tabs}
+          activeTabKey={activeTabKey}
+          onTabChange={onTabChange}
+          leadingInset={SPACING_PX[spacing]}
+        />
       ) : (
         <div
           role="tablist"
