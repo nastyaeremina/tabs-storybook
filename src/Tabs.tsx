@@ -140,7 +140,7 @@ function MobileTabsBar<T extends string>({
         {open && (
           <div
             role="listbox"
-            className="absolute left-0 top-full z-10 mt-1 min-w-[160px] rounded-lg border border-solid border-tab-border bg-white py-1 shadow-popover-50"
+            className="absolute left-0 top-full z-10 mt-1 min-w-[160px] rounded border border-solid border-tab-border bg-white py-1 shadow-popover-50"
           >
             {tabs.map((tab) => (
               <button
@@ -293,7 +293,7 @@ export function Tabs<T extends string = string>({
                 <ChevronDown />
               </button>
               {overflowOpen && (
-                <div className="absolute left-0 top-full z-10 mt-1 min-w-[160px] rounded-lg border border-solid border-tab-border bg-white py-1 shadow-popover-50">
+                <div className="absolute left-0 top-full z-10 mt-1 min-w-[160px] rounded border border-solid border-tab-border bg-white py-1 shadow-popover-50">
                   {overflowTabs.map((tab) => (
                     <button
                       key={tab.key}
