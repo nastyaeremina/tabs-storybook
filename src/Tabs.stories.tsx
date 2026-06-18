@@ -7,7 +7,9 @@ const sampleTabs: TabItem[] = [
   { key: 'invoices', label: 'Invoices' },
   { key: 'subscriptions', label: 'Subscriptions' },
   { key: 'store', label: 'Store' },
+  { key: 'payment-links', label: 'Payment Links' },
   { key: 'services', label: 'Services' },
+  { key: 'reports', label: 'Reports' },
 ];
 
 const meta: Meta<typeof Tabs> = {
@@ -45,7 +47,11 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** Change the `spacing` control to watch the leading inset move — the gap between tabs stays 12px. */
+/**
+ * Resize the canvas to see all three responsive stages: full tabs → tabs that
+ * don't fit collapse into a "N more" dropdown → below `mobileBreakpoint` the
+ * whole bar becomes a dropdown selector. Also try the `spacing` control.
+ */
 export const Default: Story = {};
 
 export const WithDisabledTab: Story = {
