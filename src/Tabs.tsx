@@ -76,7 +76,7 @@ function TabButton<T extends string>({
       disabled={tab.disabled}
       onClick={() => !tab.disabled && onSelect(tab.key)}
       className={[
-        'relative flex h-full shrink-0 items-center justify-center gap-1.5',
+        'relative flex h-full self-stretch shrink-0 items-center justify-center gap-1.5',
         'border-none bg-transparent px-2 text-sm font-normal transition-colors',
         tab.disabled
           ? 'cursor-default text-text-disabled'
@@ -88,7 +88,7 @@ function TabButton<T extends string>({
       {tab.label}
       {tab.badge}
       {active && (
-        <span className="absolute bottom-0 left-0 right-0 h-px bg-text-primary" />
+        <span className="absolute -bottom-px left-0 right-0 h-px bg-text-primary" />
       )}
     </button>
   );
