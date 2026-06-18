@@ -29,7 +29,8 @@ const meta: Meta<typeof Tabs> = {
       options: ['none', '8px', '12px', '16px', '20px', '24px'],
     },
     mobileBreakpoint: {
-      description: 'Width in px below which tabs collapse into a dropdown',
+      description:
+        'Width (px) below which the whole bar becomes a single dropdown selector. Above it, tabs that do not fit collapse one-by-one into a "N more" menu instead.',
       control: 'number',
     },
     activeTabKey: { control: false },
