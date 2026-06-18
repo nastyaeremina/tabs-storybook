@@ -173,11 +173,12 @@ function MobileTabsBar<T extends string>({
 /**
  * Unified Tabs — single 1px-underline tab pattern.
  *
+ * - 48px bar height (1px bottom border)
  * - 1px active indicator (#212B36) flush with the bar's bottom border
  * - Active label #212B36, inactive #6B6F76 (Figma Tab spec)
  * - Fixed 12px gap between tabs; each tab has 8px horizontal padding
  * - `spacing` controls the bar's leading inset (none / 8 / 12 / 16 / 20 / 24px)
- * - Tabs that don't fit collapse into a "N more" dropdown
+ * - Tabs that don't fit collapse into a "N more" dropdown (32px menu items)
  * - Below `mobileBreakpoint` the bar becomes a dropdown selector
  */
 export function Tabs<T extends string = string>({
