@@ -112,90 +112,65 @@ export function Tabs<T extends string = string>({
   mobileBreakpoint = DEFAULT_MOBILE_BREAKPOINT,
   className,
 }: TabsProps<T>) {
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  // The wrapper is always mounted (select OR tablist render inside it), so the
+  // ResizeObserver keeps firing even after switching to/from mobile.
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = React.useState(tabs.length);
   const [isMobile, setIsMobile] = React.useState(false);
   const [overflowOpen, setOverflowOpen] = React.useState(false);
 
   React.useLayoutEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
 
-    const measure = () => {
-      const width = container.clientWidth;
+    const compute = (width: number) => {
+      // Ignore non-positive widths (pre-layout / detached); keep current state
+      // so tabs are never wrongly collapsed before a real measurement.
+      if (!width) return;
 
-      // Before layout (width 0) show everything; the observer re-runs once the
-      // bar has a real width. Collapsing at width 0 would wrongly hide tabs.
-      if (width === 0) {
-        setIsMobile(false);
-        setVisibleCount(tabs.length);
+      if (width < mobileBreakpoint) {
+        setIsMobile(true);
         return;
       }
-
-      setIsMobile(width < mobileBreakpoint);
+      setIsMobile(false);
 
       const items = Array.from(
-        container.querySelectorAll<HTMLElement>('[data-tab-measure]'),
+        wrapper.querySelectorAll<HTMLElement>('[data-tab-measure]'),
       );
       if (!items.length) return;
 
       const morePill = 88; // reserved width for the "N more" trigger
+      const available = width - SPACING_PX[spacing];
       let used = 0;
       let count = 0;
       for (let i = 0; i < items.length; i++) {
         const next = items[i].offsetWidth + (i > 0 ? TAB_GAP : 0);
         const reserve = i < items.length - 1 ? morePill + TAB_GAP : 0;
-        if (used + next + reserve > width) break;
+        if (used + next + reserve > available) break;
         used += next;
         count++;
       }
       setVisibleCount(Math.max(1, count));
     };
 
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(container);
+    compute(wrapper.clientWidth);
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) compute(entry.contentRect.width);
+    });
+    observer.observe(wrapper);
     return () => observer.disconnect();
-  }, [tabs, mobileBreakpoint]);
-
-  if (isMobile) {
-    return (
-      <select
-        className={[
-          'h-12 w-full border-0 border-b border-solid border-tab-border',
-          'bg-transparent px-2 text-sm text-text-primary',
-          className ?? '',
-        ].join(' ')}
-        value={activeTabKey}
-        onChange={(e) => onTabChange(e.target.value as T)}
-      >
-        {tabs.map((tab) => (
-          <option key={tab.key} value={tab.key} disabled={tab.disabled}>
-            {tab.label}
-          </option>
-        ))}
-      </select>
-    );
-  }
+  }, [tabs, spacing, mobileBreakpoint]);
 
   const visibleTabs = tabs.slice(0, visibleCount);
   const overflowTabs = tabs.slice(visibleCount);
 
   return (
-    <div
-      ref={containerRef}
-      role="tablist"
-      style={{ paddingLeft: SPACING_PX[spacing], gap: TAB_GAP }}
-      className={[
-        'relative flex h-12 items-center border-0 border-b border-solid border-tab-border',
-        className ?? '',
-      ].join(' ')}
-    >
-      {/* Hidden full set used purely for width measurement. */}
+    <div ref={wrapperRef} className={['relative w-full', className ?? ''].join(' ')}>
+      {/* Hidden full set used purely for width measurement (always present). */}
       <div
         aria-hidden
         style={{ gap: TAB_GAP }}
-        className="pointer-events-none invisible absolute flex h-full items-center"
+        className="pointer-events-none invisible absolute flex items-center"
       >
         {tabs.map((tab) => (
           <span
@@ -209,47 +184,67 @@ export function Tabs<T extends string = string>({
         ))}
       </div>
 
-      {visibleTabs.map((tab) => (
-        <TabButton
-          key={tab.key}
-          tab={tab}
-          active={tab.key === activeTabKey}
-          onSelect={onTabChange}
-        />
-      ))}
+      {isMobile ? (
+        <select
+          className="h-12 w-full border-0 border-b border-solid border-tab-border bg-transparent px-2 text-sm text-text-primary"
+          value={activeTabKey}
+          onChange={(e) => onTabChange(e.target.value as T)}
+        >
+          {tabs.map((tab) => (
+            <option key={tab.key} value={tab.key} disabled={tab.disabled}>
+              {tab.label}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <div
+          role="tablist"
+          style={{ paddingLeft: SPACING_PX[spacing], gap: TAB_GAP }}
+          className="relative flex h-12 items-center border-0 border-b border-solid border-tab-border"
+        >
+          {visibleTabs.map((tab) => (
+            <TabButton
+              key={tab.key}
+              tab={tab}
+              active={tab.key === activeTabKey}
+              onSelect={onTabChange}
+            />
+          ))}
 
-      {overflowTabs.length > 0 && (
-        <div className="relative shrink-0">
-          <button
-            type="button"
-            onClick={() => setOverflowOpen((o) => !o)}
-            className="flex h-full items-center gap-1 border-none bg-transparent cursor-pointer px-1 text-sm font-normal text-text-secondary"
-          >
-            {overflowTabs.length} more
-            <ChevronDown />
-          </button>
-          {overflowOpen && (
-            <div className="absolute left-0 top-full z-10 mt-1 min-w-[140px] rounded-lg border border-solid border-tab-border bg-white py-1 shadow-lg">
-              {overflowTabs.map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  disabled={tab.disabled}
-                  onClick={() => {
-                    if (tab.disabled) return;
-                    onTabChange(tab.key);
-                    setOverflowOpen(false);
-                  }}
-                  className={[
-                    'flex w-full items-center gap-1.5 border-none bg-transparent',
-                    'cursor-pointer px-3 py-2 text-left text-sm',
-                    tab.disabled ? 'text-text-disabled' : 'text-text-primary',
-                    tab.key === activeTabKey ? 'bg-[#EFF1F4]' : '',
-                  ].join(' ')}
-                >
-                  {tab.label}
-                </button>
-              ))}
+          {overflowTabs.length > 0 && (
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setOverflowOpen((o) => !o)}
+                className="flex h-full items-center gap-1 border-none bg-transparent cursor-pointer px-1 text-sm font-normal text-text-secondary"
+              >
+                {overflowTabs.length} more
+                <ChevronDown />
+              </button>
+              {overflowOpen && (
+                <div className="absolute left-0 top-full z-10 mt-1 min-w-[140px] rounded-lg border border-solid border-tab-border bg-white py-1 shadow-lg">
+                  {overflowTabs.map((tab) => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      disabled={tab.disabled}
+                      onClick={() => {
+                        if (tab.disabled) return;
+                        onTabChange(tab.key);
+                        setOverflowOpen(false);
+                      }}
+                      className={[
+                        'flex w-full items-center gap-1.5 border-none bg-transparent',
+                        'cursor-pointer px-3 py-2 text-left text-sm',
+                        tab.disabled ? 'text-text-disabled' : 'text-text-primary',
+                        tab.key === activeTabKey ? 'bg-[#EFF1F4]' : '',
+                      ].join(' ')}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
