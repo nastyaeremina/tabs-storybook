@@ -45,15 +45,13 @@ export interface TabsProps<T extends string = string> {
 
 const DEFAULT_MOBILE_BREAKPOINT = 480;
 
+// Exact ChevronDown from the design system (assemblycom/design-system icons).
 function ChevronDown() {
   return (
-    <svg width="14" height="14" viewBox="0 0 12 12" fill="none" aria-hidden>
+    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden>
       <path
-        d="M3 4.5L6 7.5L9 4.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        fill="currentColor"
+        d="M10.011 14.69a.93.93 0 0 1-.669-.273l-7.496-7.5c-.323-.332-.41-.914 0-1.324s.977-.344 1.325 0 6.84 6.836 6.84 6.836l6.836-6.842c.32-.318.927-.39 1.32.002.337.338.416.913 0 1.33l-7.5 7.498a.9.9 0 0 1-.656.273"
       />
     </svg>
   );
@@ -142,7 +140,7 @@ function MobileTabsBar<T extends string>({
         {open && (
           <div
             role="listbox"
-            className="absolute left-0 top-full z-10 mt-1 min-w-[160px] rounded-lg border border-solid border-tab-border bg-white py-1 shadow-lg"
+            className="absolute left-0 top-full z-10 mt-1 min-w-[160px] rounded-lg border border-solid border-tab-border bg-white py-1 shadow-popover-50"
           >
             {tabs.map((tab) => (
               <button
@@ -157,10 +155,9 @@ function MobileTabsBar<T extends string>({
                   setOpen(false);
                 }}
                 className={[
-                  'flex w-full items-center border-none bg-transparent',
-                  'cursor-pointer px-3 py-2 text-left text-sm',
+                  'flex h-8 w-full items-center gap-3 border-none bg-transparent',
+                  'cursor-pointer px-3 text-left text-sm hover:bg-tab-hover',
                   tab.disabled ? 'text-text-disabled' : 'text-text-primary',
-                  tab.key === activeTabKey ? 'bg-[#EFF1F4]' : '',
                 ].join(' ')}
               >
                 {tab.label}
@@ -296,7 +293,7 @@ export function Tabs<T extends string = string>({
                 <ChevronDown />
               </button>
               {overflowOpen && (
-                <div className="absolute left-0 top-full z-10 mt-1 min-w-[140px] rounded-lg border border-solid border-tab-border bg-white py-1 shadow-lg">
+                <div className="absolute left-0 top-full z-10 mt-1 min-w-[160px] rounded-lg border border-solid border-tab-border bg-white py-1 shadow-popover-50">
                   {overflowTabs.map((tab) => (
                     <button
                       key={tab.key}
@@ -308,10 +305,9 @@ export function Tabs<T extends string = string>({
                         setOverflowOpen(false);
                       }}
                       className={[
-                        'flex w-full items-center gap-1.5 border-none bg-transparent',
-                        'cursor-pointer px-3 py-2 text-left text-sm',
+                        'flex h-8 w-full items-center gap-3 border-none bg-transparent',
+                        'cursor-pointer px-3 text-left text-sm hover:bg-tab-hover',
                         tab.disabled ? 'text-text-disabled' : 'text-text-primary',
-                        tab.key === activeTabKey ? 'bg-[#EFF1F4]' : '',
                       ].join(' ')}
                     >
                       {tab.label}

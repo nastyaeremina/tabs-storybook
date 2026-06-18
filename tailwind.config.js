@@ -11,6 +11,10 @@ export default {
         'tab-border': '#DFE1E4',
         'tab-hover': '#F8F9FB',
       },
+      boxShadow: {
+        // Matches the design system's `popover-50` shadow token.
+        'popover-50': '0px 6px 20px 0px rgba(0, 0, 0, 0.07)',
+      },
     },
   },
   plugins: [],
